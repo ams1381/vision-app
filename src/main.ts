@@ -2,9 +2,7 @@ import './style.css'
 
 document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
   <div id="container">
-    <div class="preview-container">
-        
-    </div>
+    <div class="preview-container"></div>
     <div class="colorized-list-container">
         
     </div>
