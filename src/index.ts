@@ -1,4 +1,6 @@
 import "toastify-js/src/toastify.css";
+import {setUpImagePreview, setUpVideoPreview, toastError} from "./utils";
+import {uploadHandler} from "./upload";
 
 
 const inputElement = document.querySelector('#file-input') as HTMLInputElement;
@@ -6,8 +8,11 @@ const previewContainer = document.querySelector('.preview-container') as HTMLDiv
 const [eccv16,siggraph17] = document.querySelectorAll<HTMLInputElement>('.model-input');
 const inputLabel = document.querySelector('.input-label') as HTMLLabelElement;
 const toolbar= document.querySelector('.toolbar') as HTMLDivElement;
+const colorizedList = document.querySelector('.colorized-list-container') as HTMLDivElement;
+
 
 let selectedModel = 'eccv16';
+
 if (inputElement) {
     inputElement.addEventListener('input', (event: Event) => {
         const fileList = (event.target as HTMLInputElement).files;
@@ -36,7 +41,7 @@ if (inputElement) {
                         reset 
                 </div>`,'text/html').body.firstChild as ChildNode;
                 uploadButtonElement.addEventListener('click',() => {
-                    uploadHandler(file,fileType).then();
+                    uploadHandler(file,fileType,selectedModel).then();
                 })
                 resetButtonElement.addEventListener('click',() => {
                     previewContainer.innerHTML = '';
@@ -54,47 +59,74 @@ if (inputElement) {
 }
 
 
-const uploadHandler = async (file : File,type : 'image' | 'video') => {
-    // Host/upload/?model_name=&file_type=
-    const lodingElement = document.querySelector('.loader') as HTMLSpanElement;
-    const formData = new FormData();
-    formData.append('file',file);
 
+
+const updateFilesList = async () => {
     try {
-        lodingElement.classList.remove('hidden');
         // @ts-ignore
-        await axios.post(`Host/upload/?model_name=${selectedModel}&file_type=${type}`,formData,{
-            headers : {
-                "Content-Type" : "multipart/form-data"
+        const response = await axios.get('Host/files');
+        const files = response.data; // Assuming the response contains an array of files
+
+        colorizedList.innerHTML = ''; // Clear the current list
+
+        files.forEach((file: { name: string, url: string, type: string }) => {
+            const listItem = document.createElement('div');
+            listItem.className = 'file-item';
+
+            if (file.type === 'image') {
+                listItem.innerHTML = `
+                    <img src="${file.url}" alt="${file.name}" class="file-preview">
+                    <a href="#" class="file-download" data-filename="${file.name}">${file.name}</a>
+                `;
+            } else if (file.type === 'video') {
+                listItem.innerHTML = `
+                    <video src="${file.url}" class="file-preview" controls></video>
+                    <a href="#" class="file-download" data-filename="${file.name}">${file.name}</a>
+                `;
+            } else {
+                listItem.innerHTML = `
+                    <a href="#" class="file-download" data-filename="${file.name}">${file.name}</a>
+                `;
             }
-        })
-    } catch (error : any) {
-        toastError('خطا در رنگی کردن تصویر');
-    } finally {
-        lodingElement.classList.add('hidden');
+
+            listItem.querySelector('.file-download')?.addEventListener('click', async (event: Event) => {
+                event.preventDefault();
+                const filename = (event.target as HTMLElement).getAttribute('data-filename');
+                if (filename) {
+                    await downloadFile(filename);
+                }
+            });
+
+            colorizedList.appendChild(listItem);
+        });
+    } catch (error) {
+        toastError('خطا در دریافت لیست فایل‌ها');
+        console.error('Error fetching files:', error);
     }
+};
 
-}
+const downloadFile = async (filename: string) => {
+    try {
+        // @ts-ignore
+        const response = await axios.get(`Host/download/${filename}/`, {
+            responseType: 'blob', // Ensure the file is downloaded as a Blob
+        });
 
-// const fetchFilesHandler = async () => {
-//     try {
-//         await fetch('Host/files');
-//     } catch (error) {
-//
-//     }
-// }
-
-const setUpImagePreview = (file: File) => {
-    previewContainer.innerHTML = `<img src="${URL.createObjectURL(file)}" alt="image" id="preview-image" >`;
-}
-const setUpVideoPreview = (file: File) => {
-    previewContainer.innerHTML = `<video width="400" height="400" controls>
-    <source src="${URL.createObjectURL(file)}" type="video/mp4">
-        Your browser does not support the video tag.
-    </video>`;
+        // Create a URL for the Blob and trigger download
+        const url = URL.createObjectURL(response.data);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        a.click();
+        URL.revokeObjectURL(url);
+    } catch (error) {
+        toastError('خطا در دانلود فایل');
+        console.error('Error downloading file:', error);
+    }
+};
 
 
-}
+
 eccv16.addEventListener('input',() => {
     selectedModel = 'eccv16'
     // @ts-ignore
@@ -111,16 +143,7 @@ siggraph17.addEventListener('input',() => {
 })
 
 
-const toastError = (content : string) => {
-    // @ts-ignore
-    Toastify({
-        text: content ,
-        duration: 3000, // مدت زمان نمایش به میلی‌ثانیه
-        gravity: "top", // "top" یا "bottom"
-        position: "right", // "left", "center" یا "right"
-        backgroundColor: "#d90000", // رنگ پس‌زمینه
-    }).showToast();
-}
+
 
 function getFileCategory(file: File): string {
     const mimeType = file.type;
@@ -141,3 +164,4 @@ function getFileCategory(file: File): string {
         return 'other';
     }
 }
+setInterval(updateFilesList, 2 * 60 * 1000);
