@@ -9,7 +9,7 @@ A modern web interface for media colorization powered by Vite + TypeScript
 
 - Node.js v16+
 - npm v9+
-- Backend API server (see [main project README](../backend/README.md))
+- Backend API server (see [main project README](https://github.com/MostafaRM7/ImageColorizing/blob/main/readme.md))
 
 ## Installation
 
@@ -29,7 +29,7 @@ A modern web interface for media colorization powered by Vite + TypeScript
 
 **Development Mode**
 ```bash
-npx dev
+npx vite
 ```
 - Access at: `http://localhost:5173`
 
