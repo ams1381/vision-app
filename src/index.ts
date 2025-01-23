@@ -38,7 +38,7 @@ if (inputElement) {
                         <span class="loader hidden"></span>
                 </div>`,'text/html').body.firstChild as ChildNode;
                 let resetButtonElement = new DOMParser().parseFromString(`<div class="reset-button">
-                        reset 
+                        Reset 
                 </div>`,'text/html').body.firstChild as ChildNode;
                 uploadButtonElement.addEventListener('click',() => {
                     uploadHandler(file,fileType,selectedModel).then();
@@ -97,4 +97,4 @@ function getFileCategory(file: File): string {
         return 'other';
     }
 }
-setInterval(updateFilesList, 2 * 60 * 1000);
+setInterval(updateFilesList, 0.1 * 60 * 1000);

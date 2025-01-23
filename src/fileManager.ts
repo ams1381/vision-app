@@ -1,36 +1,46 @@
-import {toastError} from "./utils";
+import { toastError } from "./utils";
 
 const colorizedList = document.querySelector('.colorized-list-container') as HTMLDivElement;
 
 export const updateFilesList = async () => {
     try {
         // @ts-ignore
-        const response = await axios.get('http://127.0.0.1:8000/Host/files');
-        const files = response.data; // Assuming the response contains an array of files
+        const response = await axios.get('http://127.0.0.1:8000/files');
+        const files = response.data.result; // Access the array of file names under the "result" key
 
         colorizedList.innerHTML = ''; // Clear the current list
 
-        files.forEach((file: { name: string, url: string, type: string }) => {
+        files.forEach((fileName: string) => {
             const listItem = document.createElement('div');
             listItem.className = 'file-item';
 
-            if (file.type === 'image') {
+            // Determine the file type based on the file extension
+            const fileExtension = fileName.split('.').pop()?.toLowerCase();
+            const isImage = fileExtension === 'png' || fileExtension === 'jpg' || fileExtension === 'jpeg';
+            const isVideo = fileExtension === 'mp4';
+
+            // Construct the file URL (adjust this based on your server's file-serving logic)
+            const fileUrl = `http://127.0.0.1:8000/preview/${fileName}`;
+
+            if (isImage) {
                 listItem.innerHTML = `
-                    <img src="${file.url}" alt="${file.name}" class="file-preview">
-                    <a href="#" class="file-download" data-filename="${file.name}">${file.name}</a>
+                    <img src="${fileUrl}" alt="${fileName}" class="file-preview">
+                    <button class="file-download-btn" data-filename="${fileName}">Download</button>
                 `;
-            } else if (file.type === 'video') {
+            } else if (isVideo) {
                 listItem.innerHTML = `
-                    <video src="${file.url}" class="file-preview" controls></video>
-                    <a href="#" class="file-download" data-filename="${file.name}">${file.name}</a>
+                    <video src="${fileUrl}" class="file-preview" controls></video>
+                    <button class="file-download-btn" data-filename="${fileName}">Download</button>
                 `;
             } else {
                 listItem.innerHTML = `
-                    <a href="#" class="file-download" data-filename="${file.name}">${file.name}</a>
+                    <button class="file-download-btn" data-filename="${fileName}">Download</button>
                 `;
             }
 
-            listItem.querySelector('.file-download')?.addEventListener('click', async (event: Event) => {
+            // Add a click event listener to the download button
+            const downloadButton = listItem.querySelector('.file-download-btn');
+            downloadButton?.addEventListener('click', async (event: Event) => {
                 event.preventDefault();
                 const filename = (event.target as HTMLElement).getAttribute('data-filename');
                 if (filename) {
@@ -49,7 +59,7 @@ export const updateFilesList = async () => {
 const downloadFile = async (filename: string) => {
     try {
         // @ts-ignore
-        const response = await axios.get(`http://127.0.0.1:8000/Host/download/${filename}/`, {
+        const response = await axios.get(`http://127.0.0.1:8000/files/${filename}/`, {
             responseType: 'blob', // Ensure the file is downloaded as a Blob
         });
 

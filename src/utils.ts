@@ -17,7 +17,7 @@ export const toastError = (content : string,background? : string) => {
         text: content ,
         duration: 3000, // مدت زمان نمایش به میلی‌ثانیه
         gravity: "top", // "top" یا "bottom"
-        position: "right", // "left", "center" یا "right"
+        position: "center", // "left", "center" یا "right"
         backgroundColor: background ?? "#d90000", // رنگ پس‌زمینه
     }).showToast();
 }

@@ -213,3 +213,32 @@ video {
         transform: rotate(360deg);
     }
 }
+.file-item {
+    display: flex;
+    align-items: center; /* Vertically center the button with the image/video */
+    margin-bottom: 10px; /* Add some spacing between items */
+}
+
+.file-preview {
+    width: 100px; /* Smaller width for the preview */
+    height: 100px; /* Smaller height for the preview */
+    object-fit: cover; /* Ensure the image/video fits within the dimensions */
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    margin-right: 10px; /* Add spacing between the preview and the button */
+}
+
+.file-download-btn {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    text-overflow:clip;
+}
+
+.file-download-btn:hover {
+    background-color: #0056b3;
+}

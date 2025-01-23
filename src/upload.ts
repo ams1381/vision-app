@@ -9,7 +9,7 @@ export const uploadHandler = async (file : File,type : 'image' | 'video',selecte
     try {
         loadingElement.classList.remove('hidden');
         // @ts-ignore
-        let response : Response = await axios.post(`http://127.0.0.1:8000/Host/upload/?model_name=${selectedModel}&file_type=${type}`,formData,{
+        let response : Response = await axios.post(`http://127.0.0.1:8000/upload/?model_name=${selectedModel}&file_type=${type}`,formData,{
             headers : {
                 "Content-Type" : "multipart/form-data"
             }
